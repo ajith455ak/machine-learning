@@ -1,0 +1,26 @@
+def candidate_elimination(examples):
+    n_features = len(examples[0]) - 1
+    S = examples[0][:-1]  # First positive example
+    G = [['?' for _ in range(n_features)]]
+
+    for ex in examples:
+        x, label = ex[:-1], ex[-1]
+        if label == 'Yes':  # Positive example
+            for i in range(n_features):
+                if S[i] != x[i]:
+                    S[i] = '?'
+            G = [g for g in G if all(g[i] == '?' or g[i] == S[i] for i in range(n_features))]
+        else:  # Negative example
+            G_new = []
+            for g in G:
+                for i in range(n_features):
+                    if g[i] == '?':
+                        for val in set(e[i] for e in examples if e[-1] == 'Yes'):
+                            if val != x[i]:
+                                new_g = g.copy()
+                                new_g[i] = val
+                                if all(new_g[j] == '?' or new_g[j] == S[j] for j in range(n_features)):
+                                    G_new.append(new_g)
+            G = G_new
+
+    return S, G
