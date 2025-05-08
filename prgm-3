@@ -1,0 +1,61 @@
+from math import log2
+from collections import Counter
+# Entropy function
+def entropy(data):
+    labels = [row[-1] for row in data]
+    total = len(labels)
+    return -sum((labels.count(label)/total) * log2(labels.count(label)/total) for label in set(labels))
+# Information gain
+def info_gain(data, attr):
+    total_entropy = entropy(data)
+    values = set(row[attr] for row in data)
+    subset_entropy = 0
+    for val in values:
+        subset = [row for row in data if row[attr] == val]
+        subset_entropy += (len(subset)/len(data)) * entropy(subset)
+    return total_entropy - subset_entropy
+# ID3 algorithm
+def id3(data, attrs):
+    labels = [row[-1] for row in data]
+    if labels.count(labels[0]) == len(labels):
+        return labels[0]
+    if not attrs:
+        return Counter(labels).most_common(1)[0][0]
+    gains = [(a, info_gain(data, a)) for a in attrs]
+    best = max(gains, key=lambda x: x[1])[0]
+    tree = {}
+    for val in set(row[best] for row in data):
+        subset = [row for row in data if row[best] == val]
+        tree[val] = id3(subset, [a for a in attrs if a != best])
+    return {best: tree}
+# Classify sample
+def classify(tree, sample):
+    if type(tree) != dict:
+        return tree
+    attr = next(iter(tree))
+    val = sample[attr]
+    return classify(tree[attr].get(val, "Unknown"), sample)
+# Data
+headers = ["Outlook", "Temp", "Humidity", "Wind", "Play"]
+data = [
+    ["Sunny", "Hot", "High", "Weak", "No"],
+    ["Sunny", "Hot", "High", "Strong", "No"],
+    ["Overcast", "Hot", "High", "Weak", "Yes"],
+    ["Rain", "Mild", "High", "Weak", "Yes"],
+    ["Rain", "Cool", "Normal", "Weak", "Yes"],
+    ["Rain", "Cool", "Normal", "Strong", "No"],
+    ["Overcast", "Cool", "Normal", "Strong", "Yes"],
+    ["Sunny", "Mild", "High", "Weak", "No"],
+    ["Sunny", "Cool", "Normal", "Weak", "Yes"],
+    ["Rain", "Mild", "Normal", "Weak", "Yes"],
+    ["Sunny", "Mild", "Normal", "Strong", "Yes"],
+    ["Overcast", "Mild", "High", "Strong", "Yes"],
+    ["Overcast", "Hot", "Normal", "Weak", "Yes"],
+    ["Rain", "Mild", "High", "Strong", "No"]
+]
+# Train and test
+tree = id3(data, list(range(len(headers)-1)))
+sample = {0: "Sunny", 1: "Mild", 2: "Normal", 3: "Strong"}
+result = classify(tree, sample)
+print("Decision Tree:", tree)
+print("Classified as:", result)
