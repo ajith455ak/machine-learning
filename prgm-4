@@ -1,0 +1,41 @@
+import numpy as np
+
+# Sigmoid activation function and derivative
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_deriv(x):
+    return x * (1 - x)
+
+# XOR input and output
+X = np.array([[0,0], [0,1], [1,0], [1,1]])  # Inputs
+y = np.array([[0], [1], [1], [0]])          # Expected output
+
+# Initialize weights randomly
+np.random.seed(1)
+weights1 = np.random.rand(2, 2)  # 2 inputs -> 2 hidden
+weights2 = np.random.rand(2, 1)  # 2 hidden -> 1 output
+bias1 = np.random.rand(1, 2)
+bias2 = np.random.rand(1, 1)
+
+# Training loop
+for epoch in range(10000):
+    # Forward pass
+    hidden = sigmoid(np.dot(X, weights1) + bias1)
+    output = sigmoid(np.dot(hidden, weights2) + bias2)
+
+    # Backpropagation
+    error = y - output
+    d_output = error * sigmoid_deriv(output)
+
+    d_hidden = d_output.dot(weights2.T) * sigmoid_deriv(hidden)
+
+    # Update weights and biases
+    weights2 += hidden.T.dot(d_output)
+    weights1 += X.T.dot(d_hidden)
+    bias2 += np.sum(d_output, axis=0, keepdims=True)
+    bias1 += np.sum(d_hidden, axis=0, keepdims=True)
+
+# Final output
+print("Predicted Output:")
+print(np.round(output, 3))
