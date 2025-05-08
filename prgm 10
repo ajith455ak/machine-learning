@@ -1,0 +1,40 @@
+import random
+import math
+
+data = [random.gauss(2, 1) for _ in range(50)] + [random.gauss(8, 1) for _ in range(50)]
+
+mu1, mu2 = 1.0, 9.0     
+sigma1, sigma2 = 1.0, 1.0
+pi1, pi2 = 0.5, 0.5     
+
+def gaussian(x, mu, sigma):
+    coeff = 1.0 / math.sqrt(2 * math.pi * sigma**2)
+    exponent = math.exp(-((x - mu)*2) / (2 * sigma*2))
+    return coeff * exponent
+
+for step in range(10):  
+    # E-Step
+    responsibilities = []
+    for x in data:
+        r1 = pi1 * gaussian(x, mu1, sigma1)
+        r2 = pi2 * gaussian(x, mu2, sigma2)
+        total = r1 + r2
+        responsibilities.append((r1 / total, r2 / total))
+
+    
+    N1 = sum([r[0] for r in responsibilities])
+    N2 = sum([r[1] for r in responsibilities])
+
+    mu1 = sum([r[0] * x for r, x in zip(responsibilities, data)]) / N1
+    mu2 = sum([r[1] * x for r, x in zip(responsibilities, data)]) / N2
+sigma1 = math.sqrt(sum([r[0] * (x - mu1)**2 for r, x in zip(responsibilities, data)]) / N1)
+    sigma2 = math.sqrt(sum([r[1] * (x - mu2)**2 for r, x in zip(responsibilities, data)]) / N2)
+
+    pi1 = N1 / len(data)
+    pi2 = N2 / len(data)
+print("Estimated Mean 1:", mu1)
+print("Estimated Mean 2:", mu2)
+print("Estimated Sigma 1:", sigma1)
+print("Estimated Sigma 2:", sigma2)
+print("Estimated Pi 1:", pi1)
+print("Estimated Pi 2:", pi2)
