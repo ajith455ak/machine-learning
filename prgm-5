@@ -1,0 +1,31 @@
+from math import sqrt
+from collections import Counter
+# Sample dataset: [feature1, feature2, ..., label]
+dataset = [
+    [2, 4, 'A'],
+    [4, 2, 'A'],
+    [4, 4, 'B'],
+    [6, 2, 'B'],
+    [6, 4, 'B']
+]
+# Euclidean distance function
+def euclidean(p1, p2):
+    return sqrt(sum((a - b) ** 2 for a, b in zip(p1, p2)))
+# K-NN algorithm
+def knn(data, query, k):
+    distances = []
+    for sample in data:
+        dist = euclidean(sample[:-1], query)
+        distances.append((dist, sample[-1]))
+    distances.sort()  # sort by distance
+    neighbors = distances[:k]
+    classes = [label for _, label in neighbors]
+    most_common = Counter(classes).most_common(1)[0][0]
+    return most_common
+# Test sample
+test_point = [5, 3]
+k = 3
+# Predict
+result = knn(dataset, test_point, k)
+print("Test point:", test_point)
+print("Predicted class:", result)
